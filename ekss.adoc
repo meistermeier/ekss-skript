@@ -1,0 +1,6 @@
+= Entwicklung komplexer Softwaresysteme
+Gerrit Meier <gerrit.meier@posteo.de>
+v0.1, 2017-02-05
+:toc:
+
+include::1_einleitung.adoc[]
