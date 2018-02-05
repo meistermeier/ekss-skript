@@ -1,0 +1,59 @@
+== Einleitung
+
+
+[quote, vegai, StackExchange]
+____
+By throwing it away completely, binaries and sources. If somebody notices, it was not trivial.
+____
+
+Bei der Entwicklung von komplexen Systemen ist es wichtig, zu wissen, welche Technologie und Methodiken einem zur Verfügung stehen.
+Dieser Skript gibt, gemeinsam mit der Vorlesung und deren Folien, stellt Auszug aus den state-of-the-art Mitteln in der Javawelt dar.
+
+=== Die (formale) Einordnung von _komplex_
+
+Um ein Problem, eine Aufgabe oder Situation einschätzen und die nötigen Schritte zur Lösung ableiten zu können, wird das https://de.wikipedia.org/wiki/Cynefin-Framework[Cynefin Framework] aus der Systemtheorie verwendet.
+Das Framework bietet fünf Domänen, um das Problem zu kategorisieren:
+
+* *Simple*
++
+Das Problem kann durch _best practices_ gelöst werden, denn es besteht eine direkte Verbindung zwischen Ursache und Wirkung.
+Man spricht in diesem Fall von den _known knowns_.
++
+_Beispiel:_ Es ist kalt im Haus -> Die Heizung wird angestellt.
+* *Complicated*
++
+Der Sachverhalt wird als _known unknowns_ bezeichnet, d.h. es ist bekannt, dass es Faktoren im System gibt, die vorher analysiert werden sollten.
+Für die Lösungsfindung wird zudem auf die Expertise der Beteiligten gesetzt.
++
+Komplizierte Probleme lassen sich durch (Fach-)Wissen lösen:
+_Beispiel:_ Die Funktionsweise einer Heizung ist für den Laien kompliziert, aber für den Heizungstechniker einfach.
+Durch Vermittlung von Wissen kann auch der Laie das Problem verstehen.
+* *Complex*
++
+Hier trifft man auf die _unknown unknowns_, d.h. es ist nicht mehr möglich mit (theoretischem) Fachwissen, eine Lösung zu erarbeiten.
+Zusammenhänge sind in dieser Domän zwar vorhanden, aber nicht mehr erkennbar.
+Ein komplexes System sollte, wenn möglich, durch schrittweises, gezieltes "Probieren" in die Richtung eines komplizierten Systems gebracht werden.
++
+_Beispiel:_ Menschlicher Organismus bei Krankheit. Vielleicht hilft nicht das erste Medikament, aber ein weiteres.
+* *Chaotic*
+Wie der Name schon ausdrückt ist auch durch mehrfache Versuche kein Zusammenhang zwischen Ursache und Wirkung zu erkennen.
+Das System verhält sich _chaotisch_ und lässt keine Analyse zur Lösungsfindung zu.
++
+_Beispiele:_ Wertpapierhandel, Wetter.
+* *Disorder*
++
+Das Problem kann keinen der vorherigen vier Domänen zugeordnet werden.
+Die einzige Lösung ist es, das Problem in Teile zu zerlegen, die den anderen Domänen zugeordnet werden können.
+
+Diese sehr formale Einordnung zeigt vor allem, dass es sich bei vielen Softwaresystemen um eher komplizierte als komplexe Lösungen handelt.
+Damit ein gemeinsamen Bild entsteht, was wir im Kontext dieser Vorlesung als _komplex_ verstehen, folgen nun ein paar Beispiele von komplexen Systemen.
+
+=== Beispiele für komplexe (Software-)Systeme
+
+* Verkehrskontrollsysteme (Boden, Luft, Wasser)
+* Versorgungssysteme (Strom, Wasser...)
+* Finanzsoftware
+* Machine Learning / KI
+* Googles Page Rank
+* Carrier Netzwerkinfrastruktur
+* ...

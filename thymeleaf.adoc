@@ -1,0 +1,393 @@
+== Thymeleaf
+
+Thymeleaf ist eine _Template Engine_ für die Verwendung in Java-Anwendungen.
+Grundsätzlich kann diese auch abseits von Webanwendungen, wie z.B. zum Stylen von Emails, Textdokumenten etc. verwendet werden.
+Ihr Haupteinsatzgebiet ist jedoch das Templating von HTML, damit diese serverseitig gerendert und dem Benutzer als fertige Seite ausgeliefert werden können.
+
+Eines der Hauptprinzipien, welches Thymeleaf auszeichnet, ist das _Natural Templating_.
+Dieses sagt aus, dass auch die Templates in korrektem HTML beschrieben werden.
+Dies ermöglicht es, dass die Templates ohne die Notwendigkeit eines Servletcontainers lokal geöffnet werden können und schon ein Eindruck der späteren Seite entsteht.
+Gerade in Hinblick auf das Prototyping einer HTML-Seite beschleunigt Thymeleaf den Zyklus zwischen Öffnen der Seite, Änderung vornehmen und das anschließende Betrachten dieser Änderungen.
+
+Im Folgenden werden die einzelnen Teile, die Thymeleaf ausmachen, im Detail betrachtet.
+
+=== Expressions
+
+Bei Thymeleaf mit Blick auf das Templating von HTML versteht man unter _Expressions_ den Inhalt eines "Wertes" zu einem HTML-Attribut.
+
+==== Variablen
+
+Einer der häufigsten Anwendungsfälle von einer Template Engine ist es, Werte aus der Anwendung anzuzeigen.
+Die nachfolgende Controllermethode lädt bspw. ein Film über den `MovieService`, gibt diesen an das `ModelAndView` Objekt weiter und stellt ihn somit der View zur Verfügung.
+Damit der Film auch im Template angezeigt werden kann, wird die Variablen Expression in Form von `${...}` verwendet.
+
+.Datenbereitstellung im Controller
+[source,java]
+----
+@GetMapping
+public ModelAndView movieDetails() {
+	ModelAndView modelAndView = new ModelAndView("movieDetails");
+	modelAndView.addObject("movie", movieService.getMovie());
+	return modelAndView;
+}
+----
+
+.Anzeige eines Films im Template
+[source,html]
+----
+<div th:text="${movie.title}">Dummy content</div>
+----
+
+Wie in dem Beispiel zu sehen ist, kann innerhalb des Templates auch auf die Felder eines Objektes zugegriffen werden, hier `movie.title`.
+Sollen mehrere Felder des gleichen Objektes dargestellt werden, kann das Objekt in dem hierarchisch höheren Knoten mittel `th:object` definiert werden.
+Zugriffe auf die Felder sind dann in den "Kind-Knoten" per `*{...}` möglich.
+
+.Verkürzter Feldzugriff mittels `*{...}`
+[source,html]
+----
+<div th:object="${movie}">
+    <span th:text="*{title}">Dummy content</span>
+</div>
+----
+
+==== Messages
+
+Messages werden verwendet, um u.a. fixe Texte anzubieten.
+Ein Anwendungsgebiet ist die Internationalisierung von Texten.
+Nachfolgend sind drei Messagedateien aufgelistet, die einen Text in Englisch, Deutsch oder Französisch abbilden.
+
+.messages.properties
+[source,text]
+----
+# ...
+welcome=Welcome
+# ...
+----
+
+.messages_de.properties
+[source,text]
+----
+# ...
+welcome=Willkommen
+# ...
+----
+
+.messages_fr.properties
+[source,text]
+----
+# ...
+welcome=Bonjour
+# ...
+----
+
+Ist die Anwendung für die korrekte Nutzung von lokalisierten Messages konfiguriert, würde die Anfrage mit einem französischen Browser zuerst die `messages_fr.properties` Werte anfragen.
+Sollte dort kein Wert vorhanden sein, fällt der Mechanismus automatisch auf die `messages.properties` zurück.
+Um die Messages anzuzeigen, kann nun die Expression `#{...}` mit der Angabe des Messagekeys verwendet werden.
+
+.Einbinden von Messages im Template
+[source,html]
+----
+<p th:text="#{welcome}">Hallo</p>
+----
+
+==== URL
+
+Thymeleaf bietet einen umfassenden Support von URLs in Expressions, die durch ein `@{...}` beschrieben wird.
+Dabei werden folgende Arten von Links unterstützt.
+Für die Beispiele in der Tabelle wird angenommen, dass die Anwendung unter `http://server/movieDb/` läuft, wobei `/movieDb/` den Contextpfad der Anwendung angibt.
+
+.URL Definitionen
+|===
+|Art|Beschreibung|Zieladresse|Thymeleaf Template
+|Absolute URLs|Externe URLs lassen sich mit absoluter Angabe (inkl. Protokol) definieren.|http://example.com|`<a th:href="@{http://example.com}"></a>`
+|Seite relativ|Dieser Link könnte z.B. auf der index Seite unter dem Pfad movies definiert sein und erzeugt einen Verweis auf eine Datei im gleichen Pfad.|http://server/movieDb/movies/details.html|`<a th:href="@{details}"></a>`
+|Contextpfad relativ|Ein führender `/` weist Thymeleaf dazu an, den Wert der URL ab dem Contextpfad zu setzen. Hier wurde bspw. aus dem _movies_ "Bereich" in den von _persons_ gewechselt.|http://server/movieDb/persons/details|`<a th:href="@{/persons/details}"></a>`
+|Server relativ|Mit einer führenden `~` kann zu anderen Anwendungen auf dem gleichen Server gesprungen werden.|http://server/otherApplication/|`<a th:href="@{~/otherApplication/}"></a>`
+|Protocol relativ|Zwei führende `//` stellen sicher, dass immer das gleiche Protokoll in externen Links verwendet wird. Dies kann sehr hilfreich sein, wenn man z.B. sicherstellen möchte, dass externe Resourcen nur mit `https` geladen werden.|http://server2.coml|`<a th:href="@{//server2.com/}"></a>`
+|===
+
+
+==== Fragments
+
+Die letzte Art von Expressions, die im Rahmen dieses Skripts vorgestellt werden soll, ist die Fragement Expression.
+Hiermit ist es möglich, Inhalte von anderen HTML Templates einzubinden.
+Weitere Informationen, zu den unterschiedlichen Möglichkeiten, um Fragmente zu verwenden, werden später gegeben.
+[source,html]
+----
+<div th:insert="~{header::welcome}"></div>
+----
+
+=== Attribute
+
+Unter Attributen werden die "HTML Attribute" verstandenen, also der Schlüssel(-wert) zu den vorhergegangenen Werten der Expressions.
+
+==== `th:text`
+
+Das wahrscheinlich am häufigsten genutzte Attribut ist `th:text`.
+Mit diesem ist es möglich, Werte aus dem übergebenen Model auszugeben.
+
+NOTE: Es gibt in Thymeleaf noch andere Möglichkeiten, Ausgaben zu erzeugen.
+Diese werden jedoch nicht im Rahmen dieser Vorlesung behandelt.
+
+.Einfache Ausgabe eines Wertes mittels `th:text`
+[source,html]
+----
+<div th:text=“${movie.title}”>Prototyp content</div>
+----
+
+.Gerenderte Ausgabe des Wertes
+[source,html]
+----
+<div>Matrix</div>
+----
+
+==== `th:utext`
+
+Es gibt eine abgewandelte Form von `th:text`, die sich `th:utext` nennet.
+Das `U` steht dabei für _unescaped_ und bedeutet, dass ein Wert 1:1 dargestellt wird.
+Werden z.B. HTML Tags mit in der Datenbank gespeichert und sollen diese direkt so in der Oberfläche angezeigt werden bzw. in die HTML Struktur mit einfließen, wird `th:utext` verwendet.
+
+.Ausgabe mit `th:utext`
+[source,html]
+----
+<div th:utext=“${movie.title}”>Prototyp content</div>
+----
+
+.Ergebnis von `th:utext`
+[source,html]
+----
+<div>Matrix <br/> Matrix II</div>
+----
+
+Im Beispiel wurde der Wert "`Matrix <br/> Matrix II`" an die View übergeben.
+`th:text` würde dafür sorgen, dass das Tag `<br/>` _escaped_ wird und u.a. aus HTML codierten größer- und kleiner-als-Zeichen besteht.
+
+WARNING: Durch das unüberprüfte Rendern von unescaped Text ist es möglich, z.B. JavaScript auf der Seite zu injecten.
+Falls es Gründe gibt `th:utext` zu verwenden, so muss eine Validierung der Inhalte vor dem Rendering geschehen.
+
+==== `th:each`
+
+Ist das Ziel einzelne Einträge von Sammlungen (Collection, Set, List...) auszugeben, so wird `th:each` verwendet.
+Dabei wird die Schleifenvariable mit dem Attribut auf einem HTML Tag definiert, welches sich für jeden Eintrag wiederholen soll.
+Dieses Tag und alle seine Kind-Tags werden so oft gerendert, wie es Einträge in der Liste gibt.
+
+.Iterartion mit `th:each`
+[source,html]
+----
+<li th:each="movie : ${movies}" th:text="${movie.title}">Movie title</li>
+----
+
+.Ausgabe der Iteration
+[source,html]
+----
+<ul>
+    <li>Matrix</li>
+    <li>Matrix II</li>
+</ul>
+----
+
+==== `th:if`
+
+Auch Bedingungen lassen sich in Thymeleaf abbilden.
+Mit `th:if` kann festgelegt werden, ob ein Tag (und seine Kinder) gerendert werden soll oder nicht.
+
+[source,html]
+----
+<span th:if="${movie.title} == 'Matrix'">!!!</span>
+----
+
+[source,html]
+----
+<ul>
+    <li>Matrix<span>!!!</span></li>
+    <li>Matrix II</li>
+</ul>
+----
+
+==== `th:unless`
+
+Das Gegenstück zu `th:if` ist `th:unless`.
+Es bietet die inverse Arbeitsweise an und rendert ein Tag nur, wenn die Bedingung *nicht* erfüllt ist.
+
+[source,html]
+----
+<span th:unless="${movie.title} == ‘Matrix’">:(</span>
+----
+
+[source,html]
+----
+<ul>
+    <li>Matrix</li>
+    <li>Matrix II<span>:(</span></li>
+</ul>
+----
+
+Ob `th:if` oder `th:unless` verwendet werden sollte, hängt nur am Entwickler, der sich im Vorfeld damit auseinandersetzen muss, welches Konstrukt im Einzelfall sinnvoller ist.
+
+==== `th:switch`/`th:case`
+
+Wie aus anderen Programmiersprachen bekannt, gibt es als letztes Attribut für die Defintion des Kontrollflusses auch in Thymeleaf ein _switch/case_ Statement.
+
+.Switch/case statement
+[source,html]
+----
+<span th:switch="${movie.genre.toString()}">
+    <span th:case="SCIFI">phew</span>
+    <span th:case="HORROR">buh</span>
+    <span th:case="COMEDY">haha</span>
+    <span th:case="*">no genre</span>
+</span>
+----
+
+[source,html]
+----
+<li>
+    <span>
+        <span>haha</span>
+    </span>
+    <span>
+        <span>buh</span>
+    </span>
+</li>
+----
+
+==== `th:fragement`/`th:insert`/`th:replace`
+
+Im vorherigen Abschnitt _Expressions_ wurde schon ein Teil für die Verwendung von Fragmenten dargestellt.
+Fragemente werden verwendet, um für sich wiederholende Elemente die Möglichkeit zu bieten, diese nur einmal definieren zu müssen.
+Diese ausgelagerten Teile nennt man bei Thymeleaf _Fragmente_, die darüberhinaus auch parametriesiert werden können, um z.B. im Kopf der Seite eine Begrüßung mit dem aktuell eingeloggten Benutzer auch auslagern zu können.
+
+.parts/header.html
+[source,html]
+----
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Header Fragment</title>
+</head>
+<body>
+<section th:fragment="menu">
+    <span th:text="#{movies}">Movie list</span>
+    <span th:text="#{top}">Top 10</span>
+</section>
+</body>
+</html>
+----
+
+Das obere Codesnippet zeigt eine gesamte HTML Seite, in der sich eine `section` befindet, die das Attribut `th:fragment` verwendet.
+Dieses Fragment kann nun in anderen Seiten verwendet werden, indem es per `<Dateiname mit Pfad> :: <Fragmentname>` referenziert wird.
+Weiter vorne wurde schon die alternative Ausdrucksform `~{<Dateiname mit Pfad>::<Fragmentname>}` vorgestellt.
+Beide sind gleichberechtigt in der Verwendug zu betrachten, doch sollte man sich auf einen Stil im Projekt einigen.
+
+.Fragment mittels insert referenzieren
+[source,html]
+----
+<div th:insert="parts/header :: menu">Menu</div>
+----
+Mit `th:insert` wird das Fragment aus dem Ursprung kopiert und als Kindelement eingefügt.
+
+[source,html]
+----
+<div>
+<section>
+    <span>Movies</span>
+    <span>Top 10</span>
+</section>
+</div>
+----
+
+.Fragment mittels replace referenzieren
+[source,html]
+----
+<div th:replace="parts/header :: menu">Menu</div>
+----
+Soll das Tag mit der Referenzierung des Fragments nur als Platzhalter dienen, so kann es mit `th:replace` angewiesen werden, sich mit dem Inhalt des Fragments zu ersetzen.
+
+[source,html]
+----
+<section>
+    <span>Movies</span>
+    <span>Top 10</span>
+</section>
+----
+
+==== `th:remove`
+
+Eingangs wurde schon die Prototypenfähigkeit von Thymeleaf herausgestellt.
+Wenn man nun wiederholdene Element, wie z.B. Listen oder Tabellen hat, füllt man diese für das Design mit Testdaten.
+Thymeleaf hat jedoch kein Wissen dadrüber, was mit diesen Daten geschehen soll, betrachtet diese als Bestandteil des Templates und rendert sie mit.
+
+Um dieses zu vermeiden, gibt es das Attribut `th:remove`, welches dazu genutzt werden kann, Thymeleaf anzuweisen, welche Elemente vor dem Rendern entfernt werden sollen.
+Die folgenden zwei Codesnippets stellen das Problem noch einmal programmatisch dar.
+
+.Prototyp Liste
+[source,html]
+----
+<ul>
+    <li th:each="movie : ${movies}">
+        <span th:text="${movie.title}">Movie title</span>
+    </li>
+    <li>My Dummy Movie I</li>
+    <li>My Dummy Movie II</li>
+    <li>My Dummy Movie III</li>
+</ul>
+----
+
+.Ausgabe der Liste inkl. Testdaten
+[source,html]
+----
+<ul>
+    <li>
+        <span>Matrix</span>
+    </li>
+    <li>
+        <span>Matrix II</span>
+    </li>
+    <li>
+        <span>It</span>
+    </li>
+    <li>My Dummy Movie I</li>
+    <li>My Dummy Movie II</li>
+    <li>My Dummy Movie III</li>
+</ul>
+----
+
+Mittels `th:remove` und einem der möglichen Werte, in diesem Fall `all-but-first`, werden nun alle Kindelemente außer dem ersten entfernt.
+
+.`th:remove` in einer Liste
+[source,html]
+----
+<ul th:remove="all-but-first">
+    <li th:each="movie : ${movies}">
+        <span th:text="${movie.title}">Movie title</span>
+    </li>
+    <li>My Dummy Movie I</li>
+    <li>My Dummy Movie II</li>
+    <li>My Dummy Movie III</li>
+</ul>
+----
+
+.Ausgabe ohne Testdaten.
+[source,html]
+----
+<ul>
+    <li>
+        <span>Matrix</span>
+    </li>
+    <li>
+        <span>Matrix II</span>
+    </li>
+    <li>
+        <span>It</span>
+    </li>
+</ul>
+----
+
+Die gesamte Liste von möglichen Werten von `th:remove`:
+
+* all - Das gesamte Tag mit allen Kindelementen wird gelöscht.
+* body - Alle Kindelemente werden gelöscht.
+* tag - Das Tag, aber nicht die Kindelemente, wird gelöscht.
+* all-but-first - Alle Kindelelemente außer das erste werden gelöscht.
+* none - Es wird nichts gelöscht (z.B. Programmlogik).

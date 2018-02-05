@@ -1,0 +1,64 @@
+== Entwicklung von komplexen Softwaresystemen in Java
+
+Dieser Abschnitt gibt eine (Teil-)Übersicht über die vorhandenen Möglichkeiten im Java Ökosystem, um komplexe Systeme zu realisieren.
+
+=== Java EE (Enterprise Edition)
+
+Java EE beschreibt den von Oracle und einem im _Java community process_ (JCP) verabschiedeten Standard für Enterprise Applications.
+Dabei beinhaltet die Spezifikation verschiedenste Technologien, wie z.B. Context and Dependency Injection (CDI), Java Server Faces (JSF), Java Persistence API (JPA) oder auch Java API for RESTful WebServices (JAX-RS), die durch eine API beschrieben werden.
+Zu jeder API gibt es mindestens eine Implementierung.
+Diese Implementierungen können separat verwendet werden, doch es bietet sich an, die Anwendungen, die auf die APIs und die Implementierungen dieser zurückgreifen, in einem (zertifizierten) Application Server zu deployen.
+
+Die Idee bei der Entwicklung besteht darin, dass nur gegen die APIs entwickelt wird und niemals gegen die eigentlichen Implementierungen, damit das Softwareprojekt auch in Umgebungen betrieben werden kann, die eine andere Implementierung einer bestimmten API anbieten.
+
+Da der Umfang des Java EE Standards von Version zu Version gestiegen ist, wurde erstmals mit Java EE 6 das sogenannte _Web Profile_ eingeführt.
+Dieses bietet zwar, im Gegensatz zum _Full Profile_, eine eingeschränkte Auswahl an APIs an, stellt jedoch alles zur Verfügung was in einer Webanwendung benötigt werden könnte.
+
+Vor allem im Finanzgewerbe oder bei internen Großanwendungen kommt heutzutage Java EE zum Einsatz.
+Die aktuelle Version von Java EE ist die Version 8.
+Für die Weiterentwicklung wurde das Projekt unter dem Namen Jakarta EE an die Eclipse Foundation übergeben.
+
+=== Spring Framework
+
+Das Spring Framework ist vor dem Hintergrund entstanden, die Entwicklung von (großen) Projekten in Java zu vereinfachen.
+Es hat sich als Vorbild Java EE genommen, welches jedoch durch seinen Communityprozess und die Herstellerkontrolle längere Entwicklungszyklen für neue Features/Versionen benötigt.
+
+Wesentlicher Bestandteil ist, wie auch bei Java EE eine Context und Dependency Injection.
+Das Spring Framework als Kern eines ganzen Spring Ökosystems, beinhaltet u.a. die (optional aktivierbaren) https://github.com/spring-projects/spring-framework/wiki/Spring-Framework-Artifacts[Komponenten]:
+
+* `spring-aop / spring-aspects` für Aspect Oriented Programming (AOP)
+* `spring-web / spring-webmvc / spring-webflux / spring-websocket` für das Erstellen von Web-Anwendungen und -Services
+* `spring-beans / spring-context` Context und Dependency Injection Support
+* `spring-test` Unterstützung beim Erstellen von Tests
+
+Darüber hinaus gibt es weitere https://spring.io/projects[Projekte], die sich zum Ziel gesetzt haben, die Entwicklung von Anwendungen im Springstil zu unterstützen.
+Einige davon sind:
+
+* *Spring Data*
++
+Konventioneller Zugriff auf relationale und NoSQL Datenbanken.
+* *Spring Batch*
++
+Unterstützung für Batchoperationen.
+* *Spring Security*
++
+Sicherheitsframework für Authentifizierung und Autorisierung.
+* *Spring Integration*
++
+Kommunikation mit externen Systemen und Implementierung vieler http://www.enterpriseintegrationpatterns.com/[Enterprise Integration Patterns].
+
+==== Spring Boot
+
+Ein besonderes Projekt im Springkontext ist _Spring Boot_.
+Es ermöglicht in wenigen Schritten und ohne aufwändige Konfiguration eine lauffähige (standalone) Anwendung zu erstellen.
+Dabei bedient sich SpringBoot an vielen anderen Projekten aus dem Spring Ökosystem, wenn der technologische Bedarf besteht.
+
+=== Andere Systeme für die Entwicklung von Enterpriseanwendungen
+
+* Play Framework
++
+Vor allem für Webanwendungen und -services gedacht. Unterstützung für Java und Scala.
+* Grails
++
+Groovys Webframework. Versucht wenig Konfigurations- und Entwicklungsoverhead zu erzeugen.
+

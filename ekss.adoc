@@ -1,6 +1,27 @@
 = Entwicklung komplexer Softwaresysteme
 Gerrit Meier <gerrit.meier@posteo.de>
-v0.1, 2017-02-05
-:toc:
+v1.0 FINAL
+:doctype: book
+:toc: left
+:toclevels: 4
+:source-highlighter: rouge
 
-include::1_einleitung.adoc[]
+include::about.adoc[]
+
+include::einleitung.adoc[]
+
+include::java_ecosystem.adoc[]
+
+include::dependency_injection.adoc[]
+
+include::data_stores.adoc[]
+
+include::persistence.adoc[]
+
+include::web_application.adoc[]
+
+include::thymeleaf.adoc[]
+
+include::web_services.adoc[]
+
+include::licence.adoc[]

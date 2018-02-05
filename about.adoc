@@ -1,0 +1,13 @@
+== Über den Inhalt
+Dieser Skript begleitet die Vorlesung _Entwicklung komplexer Softwaresysteme_ an der https://www.ostfalia.de[Ostfalia Hochschule für angewandte Wissenschaften] im Sommersemester 2018.
+
+.Links
+[options="header"]
+|===
+|Inhalt|URL
+|Codebeispiele|https://github.com/meistermeier/ekss
+|Folien|https://meier.cloud/ekss/ekss.pdf
+|Skript (HTML)|https://meier.cloud/ekss/ekss-skript.html
+|Skript (PDF)|https://meier.cloud/ekss/ekss-skript.pdf
+|Sourcecode des Scripts|https://github.com/meistermeier/ekss-skript
+|===

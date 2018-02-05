@@ -1,0 +1,306 @@
+== Dependency Injection (DI)
+
+=== Einleitung
+
+Um die Vorteile von _Dependency Injection_ verstehen zu können, ist es sinnvoll, zuerst ein klassisches Codebeispiel zu betrachten.
+
+.ClassicController.java
+[source,java]
+----
+public class ClassicController {
+
+	private final ClassicService service;
+
+	public Controller() {
+		this.service = new ClassicService();
+	}
+
+	public void doWork() {
+		this.service.delegateWork();
+	}
+}
+----
+
+Wie schnell zu erkennen ist, muss ohne DI an dieser Stelle eine konkrete Implementierung (im Constructor) erzeugt und referenziert werden.
+Es ist nicht einfach, die Implementierung auszutauschen ohne auch die abhängige Klasse anzufassen.
+Darüber hinaus ist der Code an dieser Stelle mit einem Unit-Test nicht isoliert zu testen.
+Durch die Einführung von Dependency Injection kann dieses Problem beseitigt und die Anwendung wartbarer werden.
+
+Es gibt verschiedene Arten von Dependency Injection:
+
+* Constructor injection
++
+Hierbei wird die Abhängigkeit in den Contructor übergeben und das Feld in der Klasse mit dem `final` Modifier versehen.
++
+[source,java]
+----
+public class Controller {
+
+	private final Service service;
+
+	public Controller(Service service) {
+		this.service = service;
+	}
+
+	public void doWork() {
+		this.service.delegateWork();
+	}
+}
+----
+* Setter injection
++
+Die Klasse bietet einen Setter an, um die Abhängigkeit entgegenzunehmen.
++
+[source,java]
+----
+public class Controller {
+
+	private Service service;
+
+	public setService(Service service) {
+		this.service = service;
+	}
+
+	public void doWork() {
+		this.service.delegateWork();
+	}
+}
+----
+
+Darüber hinaus existieren noch mehrere Arten von DI, die entweder die Eigenheiten von ausgewählten Frameworks sind oder auf Eigenimplementierungen eines DI Frameworks beruhen.
+
+Eine Auswahl von bekannten DI Frameworks für Java:
+
+* Java EE Implementierung von https://jcp.org/en/jsr/detail?id=299[JSR 299]
+* Spring Framework
+* Google Guice
+
+=== Beans
+
+Im Mittelpunkt der Dependency Injection stehen die sog. _Beans_.
+Eine Bean wird beschrieben als ein Objekt, dass durch ein DI Framework instanziiert und verwaltet wird.
+D.h. ein instanziiertes Objekt kann wiederum in einem weiteren als Abhängigkeit verwendet werden etc.
+
+=== DI mit Spring
+
+Im Folgenden wird vorgestellt, wie das Spring Framework als DI Framework verwendet wird und arbeitet.
+
+==== Context
+
+Im Zentrum des Spring Frameworks steht eine Implementierung des Interfaces `ApplicationContext`.
+Der Context wird in diesem Fall auch Container bezeichnet, da sich dort alle instanziierten Beans befinden.
+Dieser Context kennt durch verschiedene Arten der Konfiguration die notwendigen Informationen über benötigte Beans und ihre Abhängigkeiten.
+
+.SimpleClassConfig
+[source,java]
+----
+@Configuration
+public class MyConfiguration {
+	@Bean
+	public Service service() {
+		return new MyService();
+	}
+}
+----
+
+Der Context kann seine Informationen aber auch über Annotationen an den Klassen bekommen.
+Hierbei handelt es sich um vordefinierte Stereotypen.
+Der Basistyp ist dabei `@Component` mit seinen Ausprägungen `@Configuration`, `@Controller`, `@Service` und `@Repository`.
+Dabei nimmt die `@Component` Annotation die Rolle einer Meta-Annotation ein, da sie in den anderen Annotationen zur Anwendung kommt.
+
+Es ist somit möglich, dass Anwendungen auch ganz ohne manuelle Beankonfigurationen in einer Konfigurationsklasse erstellt werden.
+
+[source,java]
+----
+@Controller
+public class MyController {}
+
+@Service
+public class MyService {}
+----
+
+==== Bean scopes
+
+Wie eingangs schon erwähnt, handelt sich bei allen auf diese Weise erstellten Objekte um _Beans_.
+Es ist möglich zu beeinflussen, wie der Scope einer Bean aussieht, das heißt wann und wie oft eine Instanz der Bean erstellt wird.
+Der Scope einer Bean kann u.a. durch das Annotieren der Klasse mit der `@Scope(<scope>)` Annotation erfolgen.
+Die ersten beiden Scopes sind in jeder Spring Applikation nutzbar.
+Die danach folgenden Scopes stehen nur zur Verfügung, wenn es sich bei der Anwendung um eine Webanwendung handelt.
+
+===== Singleton
+
+Der Singleton-Scope erzeugt, wie der Name schon zu erkennen lässt, genau eine Instanz der Bean.
+Jede abhängige Bean wird die gleiche Instanz erhalten wie die anderen Beans.
+Der Singleton-Scope ist der Default-Scope im Spring Framework.
+
+===== Prototype
+
+Im Gegensatz zum Singleton-Scope, wird in diesem Scope bei jeder Referenzierung eine neue Instanz der Bean erstellt.
+Unter einer Referenzierung versteht man vor allem das Injecten einer Instanz.
+Diese Art von Scope ist relativ "teuer", da es potentiell viele Instanzen dieser Klasse geben kann, deren Erstellung Zeit und Bereithalten Speicherplatz braucht.
+Es sollten daher nur Klassen als Prototyp verwendet werden, die einen internen Stand halten müssen.
+
+===== Request
+
+Der Request-Scope für eine Bean wird mit der Annotation `@RequestScope` aktiviert.
+Diese Bean wird für jeden Request in der Anwendung neu erstellt und kann daher ihren internen Zustand beliebig während ihrer Lebenszeit ändern.
+
+===== Session
+
+Wenn mit HTTP Sessions gearbeitet wird, kann auch die Nutzung von `@SessionScope` Beans von Nutzen sein.
+Diese Bean bleibt so lange erhalten, wie die Session des Nutzers existiert.
+
+===== Application
+
+Dieser Scope, der mit `@ApplicationScope` definiert wird, klingt wie ein Singleton-Scope, aber dennoch unterscheidet er sich von diesem.
+Der Singleton-Scope bezieht sich auf den `ApplicationContext`, der Application-Scope jedoch auf einen `ServletContext`.
+Von diesem kann es unter Umständen mehrere Instanzen während der Laufzeit einer gesamten Anwendung geben.
+
+===== Scopes in JavaEE
+Ein kleiner Überblick der Scopes, die in JavaEE vorhanden sind.
+
+|===
+|Scope|Description
+|ApplicationScoped|Eine Instanz im gesamten Applikationszyklus.
+|SessionScoped|HTTP Session gebunden (siehe auch Springs Session Scope).
+|RequestScoped|HTTP Request gebunden (siehe auch Springs Request Scope).
+|ConversationScoped|Die Client erhält eine Conversation-Id, mit der er mehrere Anfragen stellen kann.
+Solange diese Id immer mitgesendet wird, bleiben die Conversation scoped Beans erhalten.
+|Singleton|Pseudo-Scope. Existiert genau einmal.
+|Dependet|Pseudo-Scope. Erhält den selben Scope, wie die Bean, in die diese Bean injected wird. (Default Scope)
+|===
+
+Neue Scopes in JavaEE 7
+|===
+|Scope|Description
+|TransactionScoped|Bean existiert über die Dauer einer Transaction. (Transaktionen werden im Kontext von Persistence später betrachtet.)
+|FlowScoped|JavaEE bietet mit JSF Flows eine Art Wizard Support für Webanwendungen. Der FlowScope bezeichnet hierbei den Scope auf eine Teil (einen Flow) im gesamten Workflow/Wizard.
+|ViewScoped|Solange eine JSF View besteht, bleibt auch die Bean, die in dieser verwendet wird und den ViewScope besitzt erhalten.
+|===
+
+==== Finden von potentiellen Beans
+
+Damit der Context in der Anwendung weiß, wo nach Beans gesucht werden soll, muss er in der Konfiguration darüber informiert werden.
+Dies geschieht durch die `@ComponentScan` Annotation.
+
+.ComponentScanConfiguration.java
+[source,java]
+----
+@Configuration
+@ComponentScan(basePackages = "com.myapplication")
+public class ComponentScanConfiguration {}
+----
+In Anwendungen mit einer großen Codebasis sollte der Scan feiner definiert werden.
+Dafür stellt die Annotation noch weitere Attribute zur Verfügung, dies sind unter anderem `includeFilter` und `excludeFilter`.
+Diese Filter nehmen als Wert entweder eine Annotation, wie z.B. `@Service`, oder auch Suchstrings in Form von regulären Ausdrücken an.
+
+.FilteredComponentScanConfiguration.java
+[source,java]
+----
+@Configuration
+@ComponentScan(value = {"com.myapplication.user"}, excludeFilters = @Filter(Service.class) )
+public class FilteredComponentScanConfiguration {}
+----
+
+==== Abhängigkeiten von Beans
+
+In den vorhergehenden Abschnitten wurde immer von Abhängigkeiten gesprochen, die durch das DI Framework gemanaged werden.
+Um eine Abhängigkeit in einer Bean zu definieren, wird die `@Autowired` Annotation verwendet.
+
+.SimpleController.java
+[source,java]
+----
+@Controller
+public class SimpleController {
+	private final Service service;
+
+	@Autowired
+	public SimpleController(Service service) {
+		this.service = service;
+	}
+}
+----
+
+Im Spring Framework ist es auch möglich, die Abhängigkeiten am Setter oder direkt am Feld zu definieren.
+Man sollte sich jedoch vorher Gedanken machen, ob dieses wirklich notwendig ist, da meist die Abhängigkeit zum Zeitpunkt der Instanziierung existieren sollte.
+Gerade die letzte Möglichkeit sollte strikt vermieden werden, da sie keine Vorteile gegenüber einer Setter-Injection bringt, falls diese benötigt wird.
+
+Durch die Constructor-Injection bieten sich insbesondere zwei Vorteile: Das Feld in der Klasse ist unveränderbar und der Code einfach zu testen.
+
+==== Naming
+
+Im Standardfall benennt das Spring Framework erstellte Beans nach ihren Klassennamen beginnend mit einem Kleinbuchstaben (bspw. `SimpleController` wird unter dem Namen `simpleController` erstellt).
+Um manuell einen Namen zu vergeben, kann in der Annotation für den Stereotypen der Name als Wert vergeben werden.
+
+[source,java]
+----
+@Controller("myController")
+public class SimpleController {}
+----
+
+[source,java]
+----
+@Configuration
+public class MyConfiguration {
+
+    @Bean(name = "myController")
+    public SimpleController simpleController() {
+        return new SimpleController();
+    }
+}
+----
+
+Für das Eingreifen in das automatisierte Benennen von Beans gibt es vor allem zwei Gründe.
+Als erstes kann es sein, dass gerade in großen Applikationen in verschiedene Bibliotheken, die genutzt werden, Beannamen mehrfach vergeben werden und es so zu einer Kollision kommen kann.
+Das zweite Problem tritt auf, wenn mehrere Beans eines Typen erzeugt werden sollen.
+
+==== Profiles
+
+Das zweite Problem des Benennens (mehrere Beans eines Typen) tritt z.B. beim Testing auf.
+Dieses kann umgangen werden, wenn man mit den von Spring unterstützten Profilen arbeitet.
+Per Default sind alle Beans in jedem definierbaren Profil vorhanden.
+Soll nun eine Bean nur bei der Verwendung eines bestimmten Profiles erstellt werden, so kann man mittels der `@Profile` Annotation diesen Wert setzen.
+
+.ProfileConfig.java
+[source,java]
+----
+@Configuration
+public class ProfileConfig {
+    @Bean
+    @Profile("default") // standard profil
+    public DataSource dataSource {/*...*/}
+
+    // sollte in einer Testconfiguration liegen
+    @Bean
+    @Profile("test")
+    public DataSource dataSource {/*...*/}
+}
+----
+
+So kann im Test per `@ActiveProfile` das passende Profil ausgewählt werden, um die geeigneten Beans zu erzeugen.
+
+.TestWithProfile.java
+[source,java]
+----
+@RunWith(SpringRunner.class)
+@ActiveProfiles("test")
+public class TestWithProfile {
+    @Autowired
+    private DataSource dataSource;
+
+    //....
+}
+----
+
+==== Verwendung von Standard Annotationen
+
+Es ist möglich, die Abhängigkeiten in Spring auch mit den https://www.jcp.org/en/jsr/detail?id=330[Standard Annotationen des JSR 330] zu verwenden.
+Die folgende Tabelle gibt einen Überblick über die unterstützten Annotationen.
+
+|===
+|JSR 330|Spring|Hinweis
+|`@ManagedBean / @Named`|`@Component`|
+|`@Named`|`@Qualifier`|
+|`@Inject`|`@Autowired`|
+|`@Singleton`|`@Scope("singleton")`|Der default Scope in JSR 330 ist dem Prototyp-Scope von Spring ähnlich. (Dependent-Scope)
+|===
