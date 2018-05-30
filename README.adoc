@@ -1,7 +1,9 @@
 == Über den Inhalt
 Dieser Skript begleitet die Vorlesung _Entwicklung komplexer Softwaresysteme_ an der https://www.ostfalia.de[Ostfalia Hochschule für angewandte Wissenschaften] im Sommersemester 2018.
 
-.Links
+Hinweis: Aktuell gibt es ein Serverzertifikatsfehler beim Aufruf der Folien und des Scripts.
+Das Problem ist bekannt und es wird dran gearbeitet :)
+
 [options="header"]
 |===
 |Inhalt|URL
